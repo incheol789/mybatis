@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="emp">
+	<select id="selectEmpList" resultMap="empMap">
+		select
+			*
+		from
+			emp
+		where
+			quit_yn = 'N'
+		order by
+			emp_id
+	</select>
+	
+	<!-- ${식별자} 컬럼명, 테이블명 동적으로 작성하는 경우 -->
+	<select id="search1" resultMap="empMap">
+		select 
+			*
+		from
+			emp
+		where
+			quit_yn = 'N'
+			and
+			${searchType} like '%' || #{searchKeyword} || '%'
+		order by 
+			emp_id
+	</select>
+	
+	<select id="search2" resultMap="empMap">
+		select
+		    *
+		from
+		    (
+		    select
+		        e.*,
+		        decode(substr(emp_no, 8, 1), '1','남','3','남','여') gender
+		    from
+		        emp e
+		    )
+		where
+			<!--  항상 참인 조건 -->
+		    1 = 1 
+		    <!-- 서치타입, 서치키워드가 널이 아니면서 빈 문자열이 아닐때  -->
+		    <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+		    and
+		    	${searchType} like '%' || #{searchKeyword} || '%'
+		    </if>
+		    <if test="gender != null">
+		    and
+		    	gender = #{gender}		    
+		    </if>
+		    <if test="salary != null and salaryCompare != null">
+		    and
+		    	<choose>
+		    		<!-- <, >, & xml 예약어는 CDATA Section 태그에 작성해야 한다. -->
+		    		<when test="salaryCompare eq 'ge'">
+		    			salary <![CDATA[ >= ]]> #{salary}
+		    		</when>
+		    		<when test="salaryCompare eq 'le'">
+		    			salary <![CDATA[ <= ]]> #{salary}
+		    		</when>
+		    	</choose>
+		    </if>
+		    <if test="hireDate != null and hiredateCompare != null">
+		    and
+					<choose>
+						<when test="hiredateCompare eq 'le'">
+							hire_date <![CDATA[ <= ]]> #{hireDate} 
+						</when>
+						<when test="hiredateCompare eq 'ge'">
+							hire_date <![CDATA[ > ]]> #{hireDate} 						
+						</when>
+					</choose>
+				</if>
+	</select>
+	
+	
+	
+	
+	
+	
+	<resultMap type="map" id="empMap">
+		<id column="emp_id" property="empId"/>
+		<result column="emp_name" property="empName"/>
+		<result column="emp_no" property="empNo"/>
+		<result column="gender" property="gender"/>
+		<result column="email" property="email"/>
+		<result column="phone" property="phone"/>
+		<result column="dept_code" property="deptCode"/>
+		<result column="job_code" property="jobCode"/>
+		<result column="sal_level" property="salLevel"/>
+		<result column="salary" property="salary"/>
+		<result column="bonus" property="bonus"/>
+		<result column="manager_id" property="managerId"/>
+		<result column="hire_date" property="hireDate"/>
+		<result column="quit_date" property="quitDate"/>
+		<result column="quit_yn" property="quitYn"/>
+	</resultMap>
+</mapper>
